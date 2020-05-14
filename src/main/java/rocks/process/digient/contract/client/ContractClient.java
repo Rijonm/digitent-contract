@@ -35,7 +35,6 @@ public class ContractClient {
 
     @PostConstruct
     private void subscribeTopics() {
-
         client.subscribe("OpenApplicationCase")
                 .tenantIdIn(camundaTenantId)
                 .handler((ExternalTask externalTask, ExternalTaskService externalTaskService) -> {
@@ -43,8 +42,8 @@ public class ContractClient {
                         Customer customer = new Customer(externalTask.getVariable("cId"), externalTask.getVariable("cName"), externalTask.getVariable("email"));
                         Application application = new Application(externalTask.getVariable("aId"), externalTask.getVariable("cId"), new Date().toString(), externalTask.getVariable("productId"), externalTask.getVariable("carId"), externalTask.getVariable("age"), externalTask.getVariable("kw"), externalTask.getVariable("licenseRevocation"), externalTask.getVariable("carPrice"), "open", "unknown", "unknown", externalTask.getVariable("retention"));
 
-                        messageSender.send(new Message<>("customer", customer, externalTask.getBusinessKey()));
-                        messageSender.send(new Message<>("application", application, externalTask.getBusinessKey()));
+                        messageSender.sendMDM(new Message<>("customer", customer, externalTask.getBusinessKey()));
+                        messageSender.sendMDM(new Message<>("application", application, externalTask.getBusinessKey()));
 
                         Map<String, Object> variables = new HashMap<>();
                         variables.put("aDate", application.getADate());
@@ -62,7 +61,7 @@ public class ContractClient {
                     try {
                         Mailing mailing = new Mailing(UUID.randomUUID().toString(), externalTask.getVariable("cId"), externalTask.getVariable("cName"), externalTask.getVariable("email"), "rejection", "file");
 
-                        messageSender.send(new Message<>("mailing", mailing, externalTask.getBusinessKey()));
+                        messageSender.sendMailing(new Message<>("mailing", mailing, externalTask.getBusinessKey()));
 
                         Map<String, Object> variables = new HashMap<>();
                         variables.put("mId", mailing.getMId());
@@ -80,7 +79,7 @@ public class ContractClient {
                     try {
                         Application application = new Application(externalTask.getVariable("aId"), externalTask.getVariable("cId"), externalTask.getVariable("aDate"), externalTask.getVariable("productId"), externalTask.getVariable("carId"), externalTask.getVariable("age"), externalTask.getVariable("kw"), externalTask.getVariable("licenseRevocation"), externalTask.getVariable("carPrice"), "close", "reject", externalTask.getVariable("risk"), externalTask.getVariable("retention"));
 
-                        messageSender.send(new Message<>("application", application, externalTask.getBusinessKey()));
+                        messageSender.sendMDM(new Message<>("application", application, externalTask.getBusinessKey()));
 
                         externalTaskService.complete(externalTask);
                     } catch (Exception e) {
@@ -96,8 +95,8 @@ public class ContractClient {
                         Application application = new Application(externalTask.getVariable("aId"), externalTask.getVariable("cId"), externalTask.getVariable("aDate"), externalTask.getVariable("productId"), externalTask.getVariable("carId"), externalTask.getVariable("age"), externalTask.getVariable("kw"), externalTask.getVariable("licenseRevocation"), externalTask.getVariable("carPrice"), "close", "accept", externalTask.getVariable("risk"), externalTask.getVariable("retention"));
                         Policy policy = new Policy(UUID.randomUUID().toString(), externalTask.getVariable("cId"), externalTask.getVariable("aId"), new Date().toString(), externalTask.getVariable("productId"), externalTask.getVariable("carId"), "issued", externalTask.getVariable("risk"), externalTask.getVariable("retention"));
 
-                        messageSender.send(new Message<>("application", application, externalTask.getBusinessKey()));
-                        messageSender.send(new Message<>("policy", policy, externalTask.getBusinessKey()));
+                        messageSender.sendMDM(new Message<>("application", application, externalTask.getBusinessKey()));
+                        messageSender.sendMDM(new Message<>("policy", policy, externalTask.getBusinessKey()));
 
                         Map<String, Object> variables = new HashMap<>();
                         variables.put("pId", policy.getPId());
@@ -118,17 +117,17 @@ public class ContractClient {
                         Mailing mailing;
                         if(new Random().nextBoolean()){
                             policy = new Policy(externalTask.getVariable("pId"), externalTask.getVariable("cId"), externalTask.getVariable("aId"), new Date().toString(), externalTask.getVariable("productId"), externalTask.getVariable("carId"), "active", externalTask.getVariable("risk"), externalTask.getVariable("retention"));
-                            messageSender.send(new Message<>("policy", policy, externalTask.getBusinessKey()));
+                            messageSender.sendMDM(new Message<>("policy", policy, externalTask.getBusinessKey()));
                             mailing = new Mailing(UUID.randomUUID().toString(), externalTask.getVariable("cId"), externalTask.getVariable("cName"), externalTask.getVariable("email"), "Confirmation", "Policy");
-                            messageSender.send(new Message<>("mailing", mailing, externalTask.getBusinessKey()));
+                            messageSender.sendMailing(new Message<>("mailing", mailing, externalTask.getBusinessKey()));
                             Map<String, Object> variables = new HashMap<>();
                             variables.put("mId", mailing.getMId());
                             externalTaskService.complete(externalTask, variables);
                         }else {
                             policy = new Policy(externalTask.getVariable("pId"), externalTask.getVariable("cId"), externalTask.getVariable("aId"), new Date().toString(), externalTask.getVariable("productId"), externalTask.getVariable("carId"), "deactivated", externalTask.getVariable("risk"), externalTask.getVariable("retention"));
-                            messageSender.send(new Message<>("policy", policy, externalTask.getBusinessKey()));
+                            messageSender.sendMDM(new Message<>("policy", policy, externalTask.getBusinessKey()));
                             mailing = new Mailing(UUID.randomUUID().toString(), externalTask.getVariable("cId"), externalTask.getVariable("cName"), externalTask.getVariable("email"), "Deactivated policy", "Letter");
-                            messageSender.send(new Message<>("mailing", mailing, externalTask.getBusinessKey()));
+                            messageSender.sendMailing(new Message<>("mailing", mailing, externalTask.getBusinessKey()));
                             externalTaskService.handleBpmnError(externalTask, "PolicyDeactivated");
                         }
                     } catch (Exception e) {
