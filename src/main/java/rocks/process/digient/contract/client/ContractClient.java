@@ -40,12 +40,13 @@ public class ContractClient {
                 .handler((ExternalTask externalTask, ExternalTaskService externalTaskService) -> {
                     try {
                         Customer customer = new Customer(externalTask.getVariable("cId"), externalTask.getVariable("cName"), externalTask.getVariable("email"));
-                        Application application = new Application(externalTask.getVariable("aId"), externalTask.getVariable("cId"), new Date().toString(), externalTask.getVariable("productId"), externalTask.getVariable("carId"), externalTask.getVariable("age"), externalTask.getVariable("kw"), externalTask.getVariable("licenseRevocation"), externalTask.getVariable("carPrice"), "open", "unknown", "unknown", externalTask.getVariable("retention"));
+                        Application application = new Application(externalTask.getBusinessKey(), externalTask.getVariable("cId"), new Date().toString(), externalTask.getVariable("productId"), externalTask.getVariable("carId"), externalTask.getVariable("age"), externalTask.getVariable("kw"), externalTask.getVariable("licenseRevocation"), externalTask.getVariable("carPrice"), "open", "unknown", "unknown", externalTask.getVariable("retention"));
 
                         messageSender.sendMDM(new Message<>("customer", customer, externalTask.getBusinessKey()));
                         messageSender.sendMDM(new Message<>("application", application, externalTask.getBusinessKey()));
 
                         Map<String, Object> variables = new HashMap<>();
+                        variables.put("aId", application.getAId());
                         variables.put("aDate", application.getADate());
 
                         externalTaskService.complete(externalTask, variables);
